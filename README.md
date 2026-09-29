@@ -1,1 +1,1 @@
-# planner
+# Student AI Study Planner
