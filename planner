@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Study Planner</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #243b53;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+        }
+
+        .form {
+            display: grid;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        input, button {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .subject {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+
+        .result {
+            margin-top: 25px;
+        }
+
+        .card {
+            background: #eef4ff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+
+        .priority {
+            font-weight: bold;
+            color: #dc2626;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🤖 AI-Powered Study Planner</h1>
+
+    <p class="subtitle">
+        Create a personalized study schedule based on your exams and preparation.
+    </p>
+
+    <div class="form">
+
+        <input
+            type="number"
+            id="hours"
+            placeholder="Available study hours per day"
+            min="1"
+            max="24"
+        >
+
+        <button onclick="addSubject()">
+            + Add Subject
+        </button>
+
+        <div id="subjects"></div>
+
+        <button onclick="generatePlan()">
+            🚀 Generate Study Plan
+        </button>
+
+    </div>
+
+    <div class="result" id="result"></div>
+
+</div>
+
+
+<script>
+
+let subjectCount = 0;
+
+
+// Add a new subject
+function addSubject() {
+
+    subjectCount++;
+
+    const div = document.createElement("div");
+
+    div.className = "subject";
+
+    div.innerHTML = `
+        <h3>Subject ${subjectCount}</h3>
+
+        <input
+            type="text"
+            class="subjectName"
+            placeholder="Subject name"
+        >
+
+        <input
+            type="date"
+            class="examDate"
+        >
+
+        <input
+            type="number"
+            class="difficulty"
+            placeholder="Difficulty (1-10)"
+            min="1"
+            max="10"
+        >
+
+        <input
+            type="number"
+            class="preparation"
+            placeholder="Preparation %"
+            min="0"
+            max="100"
+        >
+    `;
+
+    document.getElementById("subjects").appendChild(div);
+}
+
+
+// Generate study plan
+function generatePlan() {
+
+    const hours =
+        Number(document.getElementById("hours").value);
+
+    if (!hours) {
+        alert("Please enter your available study hours.");
+        return;
+    }
+
+    const names =
+        document.querySelectorAll(".subjectName");
+
+    const dates =
+        document.querySelectorAll(".examDate");
+
+    const difficulties =
+        document.querySelectorAll(".difficulty");
+
+    const preparations =
+        document.querySelectorAll(".preparation");
+
+
+    let subjects = [];
+
+    for (let i = 0; i < names.length; i++) {
+
+        if (!names[i].value || !dates[i].value) {
+            continue;
+        }
+
+        const today = new Date();
+
+        const exam = new Date(dates[i].value);
+
+        const difference =
+            exam - today;
+
+        const daysLeft =
+            Math.max(
+                1,
+                Math.ceil(
+                    difference / (1000 * 60 * 60 * 24)
+                )
+            );
+
+        const difficulty =
+            Number(difficulties[i].value) || 5;
+
+        const preparation =
+            Number(preparations[i].value) || 0;
+
+
+        // AI-style priority calculation
+
+        const urgency =
+            Math.max(0, 30 - daysLeft);
+
+        const preparationGap =
+            100 - preparation;
+
+        const priority =
+            (urgency * 0.4) +
+            (preparationGap * 0.4) +
+            (difficulty * 2 * 0.2);
+
+
+        subjects.push({
+
+            name: names[i].value,
+
+            daysLeft: daysLeft,
+
+            difficulty: difficulty,
+
+            preparation: preparation,
+
+            priority: priority
+
+        });
+    }
+
+
+    if (subjects.length === 0) {
+
+        alert("Please add at least one subject.");
+
+        return;
+    }
+
+
+    // Highest priority first
+
+    subjects.sort(
+        (a, b) => b.priority - a.priority
+    );
+
+
+    // Calculate total priority
+
+    const totalPriority =
+        subjects.reduce(
+            (sum, subject) =>
+                sum + subject.priority,
+            0
+        );
+
+
+    let output =
+        "<h2>📚 Your Personalized Study Plan</h2>";
+
+
+    subjects.forEach(subject => {
+
+        const studyHours =
+            (subject.priority / totalPriority)
+            * hours;
+
+
+        output += `
+
+            <div class="card">
+
+                <h3>${subject.name}</h3>
+
+                <p>
+                    📅 Exam in:
+                    <strong>
+                        ${subject.daysLeft} days
+                    </strong>
+                </p>
+
+                <p>
+                    📊 Preparation:
+                    ${subject.preparation}%
+                </p>
+
+                <p>
+                    🎯 Difficulty:
+                    ${subject.difficulty}/10
+                </p>
+
+                <p class="priority">
+                    Priority Score:
+                    ${subject.priority.toFixed(2)}
+                </p>
+
+                <p>
+                    ⏰ Recommended study time:
+                    <strong>
+                        ${studyHours.toFixed(1)} hours/day
+                    </strong>
+                </p>
+
+            </div>
+        `;
+    });
+
+
+    document.getElementById("result").innerHTML =
+        output;
+}
+
+</script>
+
+</body>
+</html>
